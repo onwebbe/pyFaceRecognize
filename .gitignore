@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Data files
+data/faces/
+data/feature/
+data/programdata/
+
+# Database
+test.db
+
