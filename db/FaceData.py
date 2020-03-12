@@ -28,6 +28,15 @@ class FaceDB():
   def getAllFaces(self):
     return self.db.getAllFaces(self.conn)
 
+  def getAllFacesWithName(self):
+    return self.db.getAllFacesWithName(self.conn)
+
+  def getAllPersons(self):
+    return self.db.getAllPersons(self.conn)
+
+  def getPersonById(self, personId):
+    return self.db.getPersonById(self.conn, personId)
+
   def updateFaceFeature(self, faceId, faceFeaturePath):
     return self.db.updateFaceFeature(self.conn, faceId, faceFeaturePath)
 
@@ -37,6 +46,12 @@ class FaceDB():
   def findFaceById(self, faceId):
     return self.db.findFaceById(self.conn, faceId)
 
+  def changeFacePerson(self, faceId, personId):
+    return self.db.changeFacePerson(self.conn, faceId, personId)
+  
+  def changePersonName(self, personId, personName):
+    return self.db.changePersonName(self.conn, personId, personName)
+    
 faceDB = FaceDB(Constants.FACE_DB)
 faceDB.startDatabase()
 

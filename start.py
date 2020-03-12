@@ -10,6 +10,54 @@ import db.FaceData as FaceData
 
 rawImageRootPath = "/Users/i326432/Documents/kimiface/"
 
+def updateMostSimilarPerson(faceId):
+  faceDB = FaceData.getFaceData()
+  compareFace = FaceUtils.compareFaceByOthers(faceId)
+
+
+  for valueObj in compareFace:
+    compareFaceId = valueObj[0]
+    similarValue = valueObj[1]
+    if (similarValue <= 0.4):
+      compareFaceData = faceDB.findFaceById(compareFaceId)
+      comparePersonId = compareFaceData['personId']
+      faceDB.changeFacePerson(faceId, comparePersonId)
+      print('找到相似的脸' + str(comparePersonId))
+    else:
+      faceDB.changeFacePerson(faceId, Constants.PERSON_ID_UNNAMED)
+      print('没有相似的脸, 更新为 匿名')
+    break
+
+def displayFaceCompareResult(sourceFaceId):
+  faceDB = FaceData.getFaceData()
+  compareFace = FaceUtils.compareFaceByOthers(sourceFaceId)
+  faceData = faceDB.findFaceById(sourceFaceId)
+  faceFilePath = faceData['imagePath']
+  faceId = faceData['faceId']
+  faceImage = cv.imread(faceFilePath)
+
+  namedWindowName = 'test_' + str(faceId)
+  cv.namedWindow(namedWindowName)
+  cv.imshow(namedWindowName, faceImage)
+
+
+  for valueObj in compareFace:
+    faceId = valueObj[0]
+    similarValue = valueObj[1]
+    if (similarValue <= 0.42):
+      faceData = faceDB.findFaceById(faceId)
+      faceFilePath = faceData['imagePath']
+      faceId = faceData['faceId']
+      faceImage = cv.imread(faceFilePath)
+
+      namedWindowName = 'test_' + str(faceId)
+      cv.namedWindow(namedWindowName)
+      cv.imshow(namedWindowName, faceImage)
+    else:
+      break
+
+  cv.waitKey(0)
+  cv.destroyAllWindows()
 for filename in os.listdir(rawImageRootPath):
   rawFilePath = os.path.join(rawImageRootPath, filename)
   print("---------开始处理: " + rawFilePath + " ---------")
@@ -21,7 +69,7 @@ for filename in os.listdir(rawImageRootPath):
       featureList = resultData['croppedFeatureList']
       faceIndex = 0
       if (len(faceList) == 0):
-        faceId = FaceUtils.createNewPersonFace('', rawFilePath)
+        faceId = FaceUtils.createNewFaceForPerson('', rawFilePath, Constants.PERSON_ID_UNNAMED)
         FaceUtils.updateFaceFeatureFile(faceId, '')
       else:
         for index in range(0, len(faceList)):
@@ -33,43 +81,15 @@ for filename in os.listdir(rawImageRootPath):
           
           faceIndex = faceIndex + 1
 
-          faceId = FaceUtils.createNewPersonFace(faceFileName, rawFilePath)
+          faceId = FaceUtils.createNewFaceForPerson(faceFileName, rawFilePath, Constants.PERSON_ID_UNNAMED)
           faceFeaturePath = os.path.join(Constants.DATA_ROOT_PATH, Constants.FEATURE_FILE_PATH, 'faceFeature_' + str(faceId) + '.npy')
           print ("开始保存feature:" + faceFeaturePath)
           saveFeatureData = np.array(featureData)
           np.save(faceFeaturePath, saveFeatureData)
           FaceUtils.updateFaceFeatureFile(faceId, faceFeaturePath)
+
+          updateMostSimilarPerson(faceId)
   else:
     print("     " + rawFilePath + " 已处理过了")
   
   print("---------结束处理: " + rawFilePath + " ---------")
-
-faceDB = FaceData.getFaceData()
-compareFace = FaceUtils.compareFaceByOthers(4)
-faceData = faceDB.findFaceById(4)
-faceFilePath = faceData['imagePath']
-faceId = faceData['faceId']
-faceImage = cv.imread(faceFilePath)
-
-namedWindowName = 'test_' + str(faceId)
-cv.namedWindow(namedWindowName)
-cv.imshow(namedWindowName, faceImage)
-
-
-for valueObj in compareFace:
-  faceId = valueObj[0]
-  similarValue = valueObj[1]
-  if (similarValue <= 0.42):
-    faceData = faceDB.findFaceById(faceId)
-    faceFilePath = faceData['imagePath']
-    faceId = faceData['faceId']
-    faceImage = cv.imread(faceFilePath)
-
-    namedWindowName = 'test_' + str(faceId)
-    cv.namedWindow(namedWindowName)
-    cv.imshow(namedWindowName, faceImage)
-  else:
-    break
-
-cv.waitKey(0)
-cv.destroyAllWindows()

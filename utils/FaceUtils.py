@@ -1,6 +1,6 @@
 import db.FaceData as FaceData
 import numpy as np
-def loadAllFaces():
+def loadAllFaceFeatures():
   faceDB = FaceData.getFaceData()
   faceDataList = faceDB.getAllFaces()
   allFaceList = {}
@@ -17,6 +17,10 @@ def createNewPersonFace(facePath, rawImagePath):
   personId = faceDB.newPerson(None)
   return faceDB.newFace(rawImagePath, facePath, personId)
 
+def createNewFaceForPerson(facePath, rawImagePath, personId):
+  faceDB = FaceData.getFaceData()
+  return faceDB.newFace(rawImagePath, facePath, personId)
+
 def updateFaceFeatureFile(faceId, featurePath):
   faceDB = FaceData.getFaceData()
   return faceDB.updateFaceFeature(faceId, featurePath)
@@ -30,7 +34,7 @@ def compareFaceByOthers(faceId):
     currentFeature = np.load(featureFilePath)
 
     faceCompareResult = {}
-    allFaceFeature = loadAllFaces()
+    allFaceFeature = loadAllFaceFeatures()
     for key, otherFaceFeature in allFaceFeature.items():
       if (key != faceId):
         distance = (np.linalg.norm(currentFeature - otherFaceFeature))
