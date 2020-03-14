@@ -93,3 +93,13 @@ def getPersonById(request):
     return HttpResponse(json.dumps(personData, cls=MyEncoder, indent=2))
   else:
     return HttpResponse(json.dumps({}, cls=MyEncoder, indent=2))
+
+def addNewPersonFace(request):
+  faceId = request.GET.get('faceId')
+  personName = request.GET.get('personName')
+  faceDB = FaceDB(Constants.FACE_DB)
+  faceDB.startDatabase()
+  personId = faceDB.newPerson(personName)
+  faceDB.changeFacePerson(faceId, personId)
+  faceDB.stopDatabase()
+  return HttpResponse(json.dumps({'success': True, 'data': {'personId': personId}}, cls=MyEncoder, indent=2))

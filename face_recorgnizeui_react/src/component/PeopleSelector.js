@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Select } from 'antd';
+import { Select, Divider, Input } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { OmitProps } from 'antd/lib/transfer/renderListBody';
 const { Option } = Select;
@@ -14,12 +15,57 @@ class PeopleSelector extends React.Component {
     super(props);
     this.props = props;
     this.state = {
-      personList: []
+      newPersonName: '',
+      personId: this.props.personId
     }
+    this.onNameChange = this.onNameChange.bind(this);
+    this.addFace = this.addFace.bind(this);
+    this.onChange = this.onChange.bind(this);
   }
   async componentDidMount() {
-    await this._getAllPerson();
+    // await this._getAllPerson();
     // await this._getPersonById(this.props.personId);
+  }
+  addFace() {
+    var self = this;
+    axios.get('/api/v1/facerecorgnize/addNewPersonFace?faceId=' + this.props.faceId + '&personName=' + this.state.newPersonName)
+    .then((response) => {
+      var responseData = response.data;
+      var personId = responseData.data.personId;
+      self.setState({
+        personId: personId
+      })
+      self.props.getAllPersonMethod();
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+  }
+  onBlue() {
+    // alert('blue')
+  }
+  onSearch() {
+    // alert('search')
+  }
+  onChange(value) {
+    var self = this;
+    axios.get('/api/v1/facerecorgnize/changeFacePerson?faceId=' + this.props.faceId + '&personId=' + value)
+    .then((response) => {
+      // self.props.getAllPersonMethod();
+      this.setState({
+        personId: value 
+      })
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+  }
+  onNameChange(evt) {
+    var self = this;
+    var personName = evt.target.value;
+    this.setState({
+      newPersonName: personName
+    })
   }
   _getAllPerson() {
     return new Promise(resolve => {
@@ -61,23 +107,40 @@ class PeopleSelector extends React.Component {
   }
   render() {
     var options = [];
-    for (var i = 0; i < this.state.personList.length; i++) {
-      var personData = this.state.personList[i];
-      options.push(<Option value={personData.personId}>{personData.personName}</Option>)
+    for (var i = 0; i < this.props.allPersonList.length; i++) {
+      var personData = this.props.allPersonList[i];
+      options.push(<Option key={personData.personId} value={personData.personId}>{personData.personName}</Option>)
     }
+    var name = 'test'
     return (
-      <div> {this.state.personList.forEach((personData) => (
-        <span>1</span>
-      ))}
-      <Select defaultValue={this.props.personId} showSearch style={{ width: 200 }}
+      <div>
+      <Select
+        showSearch
+        value={this.state.personId}
+        style={{ width: 240 }}
         placeholder="--清选择--"
         optionFilterProp="children"
-        onChange={onChange}
-        onBlur={onBlur}
-        onSearch={onSearch}
+        onChange={this.onChange}
+        onBlur={this.onBlur}
+        onSearch={this.onSearch}
         filterOption={(input, option) =>
             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
         }
+        dropdownRender={menu => (
+          <div>
+            {menu}
+            <Divider style={{ margin: '4px 0' }} />
+            <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+              <Input style={{ flex: 'auto' }} value={this.state.newPersonName} onChange={this.onNameChange} />
+              <a
+                style={{ flex: 'none', padding: '8px', display: 'block', cursor: 'pointer' }}
+                onClick={this.addFace}
+              >
+                <PlusOutlined /> 添加新的脸
+              </a>
+            </div>
+          </div>
+        )}
       >
         {options}
       </Select>

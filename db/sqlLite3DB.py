@@ -40,9 +40,9 @@ def newPerson(conn, personName):
     sql = "INSERT INTO PERSON (PERSON_NAME) VALUES ('匿名')"
     c = conn.cursor()
     c.execute(sql)
-    cursor = c.execute("select last_insert_rowid();")
-
   conn.commit()
+
+  cursor = c.execute("select last_insert_rowid();")
   personId = None
   for row in cursor:
     personId = row[0]

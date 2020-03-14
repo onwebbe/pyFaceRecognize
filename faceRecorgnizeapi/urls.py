@@ -10,4 +10,5 @@ urlpatterns = [
     path(r'getFacesWithName', views.getFacesWithName),
     path(r'changeFacePerson', views.changeFacePerson),
     path(r'changePersonName', views.changePersonName),
+    path(r'addNewPersonFace', views.addNewPersonFace),
 ]

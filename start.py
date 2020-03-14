@@ -58,8 +58,21 @@ def displayFaceCompareResult(sourceFaceId):
 
   cv.waitKey(0)
   cv.destroyAllWindows()
-for filename in os.listdir(rawImageRootPath):
-  rawFilePath = os.path.join(rawImageRootPath, filename)
+
+
+
+
+def processAllFiles(path):
+  allfile=[]
+  for dirpath,dirnames,filenames in os.walk(path):
+    for name in filenames:
+      processFile(os.path.join(dirpath, name))
+    for dir in dirnames:
+      processAllFiles(os.path.join(path, dir))
+  return allfile
+  
+def processFile(filePath):
+  rawFilePath = filePath
   print("---------开始处理: " + rawFilePath + " ---------")
   existingRawFileInDB = ImageUtils.getFaceInDBByRawImage(rawFilePath)
   if (len(existingRawFileInDB) == 0):
@@ -93,3 +106,5 @@ for filename in os.listdir(rawImageRootPath):
     print("     " + rawFilePath + " 已处理过了")
   
   print("---------结束处理: " + rawFilePath + " ---------")
+
+processAllFiles(rawImageRootPath)
