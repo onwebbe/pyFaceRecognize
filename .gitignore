@@ -136,3 +136,6 @@ data/programdata/
 # Database
 test.db
 
+# VSCode
+.vscode
+.DS_Store
