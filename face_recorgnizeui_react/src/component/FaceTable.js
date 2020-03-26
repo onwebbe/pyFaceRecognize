@@ -10,6 +10,7 @@ class FaceTable extends React.Component {
       var self = this;
       this.refreshPerson = this.refreshPerson.bind(this);
       this._filterData = this._filterData.bind(this);
+      this.setSearchCriteria = this.setSearchCriteria.bind(this);
       this.state={
         columns: [{
           title: '标号',
@@ -41,8 +42,10 @@ class FaceTable extends React.Component {
         }],
         data: [],
         allPeopleList: [],
-        currentSearchOptions: null
+        currentSearchOptions: null,
+        search: props.searchCriteria
       }
+      
     }
     async componentDidMount() {
       this.refreshPerson();

@@ -13,6 +13,12 @@ def initDatabase(conn):
     PERSON_ID INTEGER PRIMARY KEY AUTOINCREMENT,
     PERSON_NAME TEXT DEFAULT ''
   );''')
+  c.execute('''CREATE TABLE IF NOT EXISTS FACE_SIMILAR (
+    FACE_ID_1 INTEGER,
+    FACE_ID_2 INTEGER,
+    SIMILAR_FACTOR REAL,
+    IS_PROCESSED INTEGER
+  );''')
   conn.commit()
   if (len(getAllPersons(conn)) == 0):
     c.execute("INSERT INTO PERSON (PERSON_ID, PERSON_NAME) VALUES (0, '不是脸')")
@@ -175,6 +181,21 @@ def getPersonById(conn, personId):
     personData['personName'] = row[1]
     break
   return personData
+
+def getFacesByPersonId(conn, personId):
+  sql = "SELECT FACE_ID, FACE_IMAGE_PATH, PERSON_ID, RAW_IMAGE_FILE_PATH, FEATURE_FILE_PATH FROM FACES WHERE PERSON_ID=" + str(personId)
+  c = conn.cursor()
+  cursor = c.execute(sql)
+  facesData = []
+  for row in cursor:
+    faceData = {}
+    faceData['faceId'] = row[0]
+    faceData['imagePath'] = row[1]
+    faceData['personId'] = row[2]
+    faceData['rawImagePath'] = row[3]
+    faceData['featurePath'] = row[4]
+    facesData.append(faceData)
+  return facesData
 # connect = startDatabase()
 # print(newPerson(connect, None))
 # stopDatabase(connect)

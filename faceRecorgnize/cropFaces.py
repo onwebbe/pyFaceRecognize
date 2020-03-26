@@ -32,10 +32,27 @@ def cropFaces(imagePath):
   result_data['imageHighlighed'] = image_raw
   return result_data
 
+def resizeImage(image):
+  #calculate the 50 percent of original dimensions
+  sourceWidth = image.shape[1]
+  sourceHeight = image.shape[0]
+  output = image
+  if (sourceWidth > 800 or sourceHeight > 600 ):
+    width = int(800)
+    height = int(600)
+
+    # dsize
+    dsize = (width, height)
+
+    # resize image
+    output = cv.resize(image, dsize)
+  return output
+
 def cropFaces2(imagePath):
   #Loading the image to be tested
   result_data = None
   image_raw = ImageUtils.createImageFromPath(imagePath)
+  image_raw = resizeImage(image_raw)
   
   if (image_raw is not None):
     cloned_image = ImageUtils.cloneImage(image_raw)

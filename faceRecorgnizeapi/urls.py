@@ -11,4 +11,7 @@ urlpatterns = [
     path(r'changeFacePerson', views.changeFacePerson),
     path(r'changePersonName', views.changePersonName),
     path(r'addNewPersonFace', views.addNewPersonFace),
+    path(r'getFaceByPersonId', views.getFaceByPersonId),
+    path(r'getPersonDetailById', views.getPersonDetailById),
+    path(r'getPersonDetailList', views.getPersonDetailList),
 ]

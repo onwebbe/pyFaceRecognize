@@ -52,6 +52,9 @@ class FaceDB():
   def changePersonName(self, personId, personName):
     return self.db.changePersonName(self.conn, personId, personName)
     
+  def getFacesByPersonId(self, personId):
+    return self.db.getFacesByPersonId(self.conn, personId)
+
 faceDB = FaceDB(Constants.FACE_DB)
 faceDB.startDatabase()
 

@@ -14,9 +14,29 @@ class ViewFacesContent extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.peopleDataReady = this.peopleDataReady.bind(this);
+
+        var initialSesrchCritera = null;
+
+        // var urlSearchParams = this.props.history.location;
+        // if (urlSearchParams && urlSearchParams.state) {
+        //     initialPersonList = [{
+        //         key: 'personId',
+        //         value: urlSearchParams.state
+        //     }]
+        // }
+
+        var matches = this.props.match;
+        if (matches && matches.params && matches.params.personId) {
+            initialSesrchCritera = [{
+                key: 'personId',
+                value: [matches.params.personId]
+            }]
+        }
+
         this.state = {
             personFilterChildrenOption: [],
-            personFilterSelectedValue: []
+            personFilterSelectedValue: [],
+            initialSesrchCritera: initialSesrchCritera
         }
     }
     populateFacdeTable (ref) {
@@ -52,7 +72,16 @@ class ViewFacesContent extends React.Component {
                 <Select.Option key={person.personId} value={person.personId}>{person.personName}</Select.Option>
             );
             personOptionList.push(personOption);
-            personOptionValue.push(person.personId);
+            if (!this.state.initialSesrchCritera) {
+                personOptionValue.push(person.personId);
+            }
+        }
+        if (this.state.initialSesrchCritera) {
+            this.state.initialSesrchCritera.forEach((item, key) => {
+                item.value.forEach((personId, key) => {
+                    personOptionValue.push(parseInt(personId));
+                });
+            });
         }
         this.setState({
             personFilterChildrenOption: personOptionList,
@@ -82,7 +111,7 @@ class ViewFacesContent extends React.Component {
                     </span>
                 </div>
                 <div>
-                    <FaceTable populateFacdeTable={this.populateFacdeTable} informFaceContentPeopleDataReady={this.peopleDataReady}></FaceTable>
+                    <FaceTable searchCriteria={this.state.initialSesrchCritera} populateFacdeTable={this.populateFacdeTable} informFaceContentPeopleDataReady={this.peopleDataReady}></FaceTable>
                 </div>
             </Layout>
         );
