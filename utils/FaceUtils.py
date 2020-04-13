@@ -1,7 +1,7 @@
 import db.FaceData as FaceData
 import numpy as np
 def loadAllFaceFeatures():
-  faceDB = FaceData.getFaceData()
+  faceDB = FaceData.getNewFaceData()
   faceDataList = faceDB.getAllFaces()
   allFaceList = {}
   for faceData in faceDataList:
@@ -26,7 +26,7 @@ def updateFaceFeatureFile(faceId, featurePath):
   return faceDB.updateFaceFeature(faceId, featurePath)
 
 def compareFaceByOthers(faceId):
-  faceDB = FaceData.getFaceData()
+  faceDB = FaceData.getNewFaceData()
   faceData = faceDB.findFaceById(faceId)
   if (faceData != None):
     featureFilePath = faceData['featurePath']

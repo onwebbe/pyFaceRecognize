@@ -7,7 +7,8 @@ def initDatabase(conn):
     FACE_IMAGE_PATH TEXT,
     PERSON_ID INTEGER,
     RAW_IMAGE_FILE_PATH TEXT,
-    FEATURE_FILE_PATH TEXT
+    FEATURE_FILE_PATH TEXT,
+    ASSIGNED_STATUS TEXT DEFAULT 'U' --status 'U'-unassigned  'M'-manually assigned 'A'-auto assigned 'F'-autoassigned but manulaly fix
   );''')
   c.execute('''CREATE TABLE IF NOT EXISTS PERSON(
     PERSON_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,8 +62,9 @@ def newFace(conn, data):
   face_path = data['facepath']
   person_id = data['personId']
   image_path = data['imagepath']
-  sql = "INSERT INTO FACES (FACE_IMAGE_PATH, PERSON_ID, RAW_IMAGE_FILE_PATH) \
-          VALUES ('" + face_path + "'," + str(person_id) + ",'" + image_path + "')"
+  assign_status = data['assignstatus']
+  sql = "INSERT INTO FACES (FACE_IMAGE_PATH, PERSON_ID, RAW_IMAGE_FILE_PATH, ASSIGNED_STATUS) \
+          VALUES ('" + face_path + "'," + str(person_id) + ",'" + image_path + "','" + assign_status + "')"
   c.execute(sql)
   cursor = c.execute("select last_insert_rowid();")
   conn.commit()
@@ -143,7 +145,7 @@ def searchFaceByRawImageFileName(conn, rawImageFileName):
   return facesData
 
 def findFaceById(conn, faceId):
-  sql = "SELECT FACE_ID, FACE_IMAGE_PATH, PERSON_ID, RAW_IMAGE_FILE_PATH, FEATURE_FILE_PATH FROM FACES WHERE FACE_ID = " + str(faceId)
+  sql = "SELECT FACE_ID, FACE_IMAGE_PATH, PERSON_ID, RAW_IMAGE_FILE_PATH, FEATURE_FILE_PATH, ASSIGNED_STATUS FROM FACES WHERE FACE_ID = " + str(faceId)
   c = conn.cursor()
   cursor = c.execute(sql)
   for row in cursor:
@@ -153,11 +155,24 @@ def findFaceById(conn, faceId):
     faceData['personId'] = row[2]
     faceData['rawImagePath'] = row[3]
     faceData['featurePath'] = row[4]
+    faceData['assignedStatus'] = row[5]
     return faceData
   return None
 
-def changeFacePerson(conn, faceId, personId):
-  sql = "UPDATE FACES SET PERSON_ID = " + str(personId) + " WHERE FACE_ID=" + str(faceId)
+def changeFacePerson(conn, faceId, personId, assignstatus):
+  sql = "SELECT ASSIGNED_STATUS FROM FACES WHERE FACE_ID=" + str(faceId)
+  c = conn.cursor()
+  cursor = c.execute(sql)
+  assigned_status = None
+  for row in cursor:
+    assigned_status  = row[0]
+    break
+
+  if (assigned_status == 'A' and assignstatus == 'M'):
+    assigned_status = 'F'
+  else:
+    assigned_status = assignstatus
+  sql = "UPDATE FACES SET PERSON_ID = " + str(personId) + ", ASSIGNED_STATUS='" + assignstatus + "' WHERE FACE_ID=" + str(faceId)
   c = conn.cursor()
   c.execute(sql)
   conn.commit()

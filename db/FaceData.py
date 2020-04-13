@@ -20,6 +20,7 @@ class FaceDB():
     data['facepath'] = facePath
     data['personId'] = personId
     data['imagepath'] = rawImagePath
+    data['assignstatus'] = 'U'
     return self.db.newFace(self.conn, data)
 
   def newPerson(self, name):
@@ -46,8 +47,8 @@ class FaceDB():
   def findFaceById(self, faceId):
     return self.db.findFaceById(self.conn, faceId)
 
-  def changeFacePerson(self, faceId, personId):
-    return self.db.changeFacePerson(self.conn, faceId, personId)
+  def changeFacePerson(self, faceId, personId, assignstatus):
+    return self.db.changeFacePerson(self.conn, faceId, personId, assignstatus)
   
   def changePersonName(self, personId, personName):
     return self.db.changePersonName(self.conn, personId, personName)
@@ -59,4 +60,9 @@ faceDB = FaceDB(Constants.FACE_DB)
 faceDB.startDatabase()
 
 def getFaceData():
+  return faceDB
+
+def getNewFaceData():
+  faceDB = FaceDB(Constants.FACE_DB)
+  faceDB.startDatabase()
   return faceDB

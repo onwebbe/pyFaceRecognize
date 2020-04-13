@@ -18,14 +18,19 @@ def updateMostSimilarPerson(faceId):
   for valueObj in compareFace:
     compareFaceId = valueObj[0]
     similarValue = valueObj[1]
-    if (similarValue <= 0.4):
-      compareFaceData = faceDB.findFaceById(compareFaceId)
-      comparePersonId = compareFaceData['personId']
-      faceDB.changeFacePerson(faceId, comparePersonId)
-      print('找到相似的脸' + str(comparePersonId))
+    compareFaceObj = faceDB.findFaceById(compareFaceId)
+    compareFaceAssignStatus = compareFaceObj['assignedStatus']
+    if (compareFaceAssignStatus == 'U' or compareFaceAssignStatus == 'A'):
+      if (similarValue <= 0.4):
+        compareFaceData = faceDB.findFaceById(compareFaceId)
+        comparePersonId = compareFaceData['personId']
+        faceDB.changeFacePerson(faceId, comparePersonId, 'A')
+        print('找到相似的脸' + str(comparePersonId))
+      else:
+        faceDB.changeFacePerson(faceId, Constants.PERSON_ID_UNNAMED, 'U')
+        print('没有相似的脸, 更新为 匿名')
     else:
-      faceDB.changeFacePerson(faceId, Constants.PERSON_ID_UNNAMED)
-      print('没有相似的脸, 更新为 匿名')
+      print('这张脸手动改过')
     break
 
 def displayFaceCompareResult(sourceFaceId):
@@ -66,12 +71,12 @@ def processAllFiles(path):
   allfile=[]
   for dirpath,dirnames,filenames in os.walk(path):
     for name in filenames:
-      processFile(os.path.join(dirpath, name))
+      processFile(os.path.join(dirpath, name), name)
     for dir in dirnames:
       processAllFiles(os.path.join(path, dir))
   return allfile
   
-def processFile(filePath):
+def processFile(filePath, filename):
   rawFilePath = filePath
   print("---------开始处理: " + rawFilePath + " ---------")
   existingRawFileInDB = ImageUtils.getFaceInDBByRawImage(rawFilePath)
@@ -88,7 +93,7 @@ def processFile(filePath):
         for index in range(0, len(faceList)):
           faceImage = faceList[index]
           featureData = featureList[index]
-
+          
           faceFileName = os.path.join(Constants.DATA_ROOT_PATH, Constants.FACE_IMG_FILE_PATH, "face_" + filename + "_" + str(faceIndex) + ".bmp")
           cv.imwrite(faceFileName, faceImage)
           

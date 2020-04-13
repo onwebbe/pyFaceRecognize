@@ -3,10 +3,15 @@ from django.http import HttpResponse
 import json
 import utils.FaceUtils as FaceUtils
 import utils.ImageUtils as ImageUtils
+
 from .MyEncoder import MyEncoder
 
 
 from db.FaceData import FaceDB
+import db.FaceData as FaceData
+
+import utils.FaceUtils as FaceUtils
+
 import utils.Constants as Constants
 
 import mimetypes
@@ -30,6 +35,7 @@ def getFaces(request):
 
 def getImage(request):
   image_path = request.GET.get('path')
+  print(image_path)
   fileWrapper = FileWrapper(open(image_path, 'rb'))
   content_type = mimetypes.guess_type(image_path)[0]
   contentLength = os.path.getsize(image_path)
@@ -66,11 +72,36 @@ def changeFacePerson(request):
   personId = request.GET.get('personId')
   faceDB = FaceDB(Constants.FACE_DB)
   faceDB.startDatabase()
-  faceDB.changeFacePerson(faceId, personId)
+  faceDB.changeFacePerson(faceId, personId, 'M')
   faceDB.stopDatabase()
+
+  _updateMostSimilarPerson(faceId)
   responseJSON = {}
   responseJSON["success"] = True
   return HttpResponse(json.dumps(responseJSON, cls=MyEncoder, indent=2))
+
+
+def _updateMostSimilarPerson(faceId):
+  faceDB = FaceData.getNewFaceData()
+  sourcePersonId = faceDB.findFaceById(faceId)['personId']
+  compareFace = FaceUtils.compareFaceByOthers(faceId)
+  for valueObj in compareFace:
+    compareFaceId = valueObj[0]
+    similarValue = valueObj[1]
+    compareFaceObj = faceDB.findFaceById(compareFaceId)
+    compareFaceAssignStatus = compareFaceObj['assignedStatus']
+    if (compareFaceAssignStatus == 'U' or compareFaceAssignStatus == 'A'):
+      if (similarValue <= 0.35):
+        # compareFaceData = faceDB.findFaceById(compareFaceId)
+        # targetFaceId = compareFaceData['faceId']
+        faceDB.changeFacePerson(compareFaceId, sourcePersonId, 'M')
+        print('找到相似的脸，改变脸：' + str(compareFaceId) + ' 到人物：' + str(sourcePersonId) + ' 相似值：' + str(similarValue))
+      else:
+        print('没有相似的脸了')
+        break
+    else:
+      print('这张脸手动改过')
+
 
 def changePersonName(request):
   personName = request.GET.get('personName')
@@ -100,8 +131,9 @@ def addNewPersonFace(request):
   faceDB = FaceDB(Constants.FACE_DB)
   faceDB.startDatabase()
   personId = faceDB.newPerson(personName)
-  faceDB.changeFacePerson(faceId, personId)
+  faceDB.changeFacePerson(faceId, personId, 'M')
   faceDB.stopDatabase()
+  _updateMostSimilarPerson(faceId)
   return HttpResponse(json.dumps({'success': True, 'data': {'personId': personId}}, cls=MyEncoder, indent=2))
 
 def getFaceByPersonId(request):
